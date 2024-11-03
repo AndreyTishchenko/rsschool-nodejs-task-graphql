@@ -5,13 +5,16 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
 } from 'graphql';
-import { MemberTypeId } from '../../member-types/schemas.js';
+import { MemberTypeId, memberTypeSchema } from '../../member-types/schemas.js';
+import { Static } from '@sinclair/typebox';
+
+export type Member = Static<typeof memberTypeSchema>;
 
 export const MemberTypeIdEnum = new GraphQLEnumType({
   name: 'MemberTypeId',
   values: {
-    BASIC: { value: MemberTypeId.BASIC },
-    BUSINESS: { value: MemberTypeId.BUSINESS },
+    basic: { value: MemberTypeId.BASIC },
+    business: { value: MemberTypeId.BUSINESS },
   },
 });
 

@@ -55,7 +55,7 @@ export const UserType: GraphQLObjectType = new GraphQLObjectType<User, Context>(
       },
     },
     subscribedToUser: {
-      type: new GraphQLList(UserType),
+      type: new GraphQLList(UserType)!,
       resolve: async ({ id }: User, _: unknown, { loaders }: Context) => {
         return loaders.subscriptionsToUsersLoader.load(id);
       },

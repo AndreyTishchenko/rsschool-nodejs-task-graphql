@@ -38,43 +38,48 @@ export const UserMutations = {
     },
   },
   subscribeTo: {
-    type: UserType,
+    type: UUIDType,  // Return UUID of the author being subscribed to
     args: { userId: { type: UUIDType }, authorId: { type: UUIDType } },
-    resolve: (
-      _: unknown,
-      { userId, authorId }: { userId: string; authorId: string },
-      { db }: Context,
-    ) => {
-      return db.user.update({
-        where: { id: userId },
-        data: {
-          userSubscribedTo: {
-            create: {
+    resolve: async (_: unknown, { userId, authorId }: { userId: string; authorId: string }, { db }: Context) => {
+      try {
+        // Ensure the user is subscribed
+        await db.user.update({
+          where: { id: userId },
+          data: {
+            userSubscribedTo: {
+              create: { authorId },
+            },
+          },
+        });
+  
+        // Return the UUID of the author after subscribing
+        return authorId;
+      } catch (error) {
+        throw new Error('Error subscribing user');
+      }
+    },
+  },
+  
+  unsubscribeFrom: {
+    type: UUIDType,  // Return UUID of the author being unsubscribed from
+    args: { userId: { type: UUIDType }, authorId: { type: UUIDType } },
+    resolve: async (_: unknown, { userId, authorId }: { userId: string; authorId: string }, { db }: Context) => {
+      try {
+        // Ensure the subscription is removed
+        await db.subscribersOnAuthors.delete({
+          where: {
+            subscriberId_authorId: {
+              subscriberId: userId,
               authorId,
             },
           },
-        },
-      });
+        });
+  
+        // Return the UUID of the author after unsubscribing
+        return authorId;
+      } catch (error) {
+        throw new Error('Error unsubscribing user');
+      }
     },
-  },
-  unsubscribeFrom: {
-    type: UUIDType,
-    args: { userId: { type: UUIDType }, authorId: { type: UUIDType } },
-    resolve: async (
-      _: unknown,
-      { userId, authorId }: { userId: string; authorId: string },
-      { db }: Context,
-    ) => {
-      await db.subscribersOnAuthors.delete({
-        where: {
-          subscriberId_authorId: {
-            subscriberId: userId,
-            authorId,
-          },
-        },
-      });
-
-      return authorId;
-    },
-  },
-};
+  }
+}
